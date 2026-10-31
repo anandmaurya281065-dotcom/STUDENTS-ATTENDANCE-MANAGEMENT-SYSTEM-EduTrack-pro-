@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+   z <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack Pro - Attendance Management System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Inter Font -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- AUTH overlay container (Shown when user is logged out) -->
+    <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <!-- Auth Card Container -->
+        <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 my-auto">
+            
+            <!-- Auth Brand Header -->
+            <div class="bg-gradient-to-br from-indigo-700 via-indigo-600 to-slate-900 p-8 text-center text-white relative">
+                <div class="inline-flex items-center justify-center p-3.5 bg-white/10 backdrop-blur-md rounded-2xl mb-3 border border-white/20 shadow-inner">
+                    <i data-lucide="graduation-cap" class="w-8 h-8 text-indigo-200"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold tracking-tight">EduTrack Pro</h1>
+                <p class="text-xs text-indigo-200 mt-1">Smart Attendance Management Platform</p>
+            </div>
+
+            <!-- LOGIN VIEW -->
+            <div id="auth-login-view" class="p-6 sm:p-8 space-y-5">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-slate-900">Welcome Back</h2>
+                    <p class="text-xs text-slate-500 mt-1">Sign in to manage classes and student records</p>
+                </div>
+
+                <form onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email / Username</label>
+                        <div class="relative">
+                            <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                            <input type="email" id="login-email" required placeholder="admin@edutrack.pro" value="admin@edutrack.pro" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-semibold text-slate-600 uppercase">Password</label>
+                            <button type="button" onclick="showAuthView('forgot')" class="text-xs text-indigo-600 hover:underline font-medium">Forgot password?</button>
+                        </div>
+                        <div class="relative">
+                            <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                            <input type="password" id="login-password" required placeholder="••••••••" value="admin123" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="login-remember" checked class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                            <span class="text-xs font-medium text-slate-600">Remember me</span>
+                        </label>
+                        <span class="text-xs text-slate-400">Demo Pass: <code class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">admin123</code></span>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2">
+                        <span>Sign In</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </form>
+
+                <div class="pt-4 border-t border-slate-100 text-center">
+                    <p class="text-xs text-slate-500">
+                        Don't have an account? 
+                        <button onclick="showAuthView('register')" class="text-indigo-600 font-semibold hover:underline">Register now</button>
+                    </p>
+                </div>
+            </div>
+
+            <!-- REGISTER VIEW -->
+            <div id="auth-register-view" class="p-6 sm:p-8 space-y-4 hidden">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-slate-900">Create Account</h2>
+                    <p class="text-xs text-slate-500 mt-1">Join EduTrack Pro to start managing attendance</p>
+                </div>
+
+                <form onsubmit="handleRegister(event)" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Full Name</label>
+                        <input type="text" id="reg-name" required placeholder="Dr. Sarah Connor" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email Address</label>
+                        <input type="email" id="reg-email" required placeholder="sarah@edutrack.pro" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Role Type</label>
+                        <select id="reg-role" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Administrator">Administrator (Full Access)</option>
+                            <option value="Teacher" selected>Teacher (Mark Attendance & Reports)</option>
+                            <option value="Student">Student (View Only)</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+                            <input type="password" id="reg-password" required minlength="6" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Confirm</label>
+                            <input type="password" id="reg-confirm-password" required minlength="6" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-600/25 transition-all mt-2">
+                        Complete Registration
+                    </button>
+                </form>
+
+                <div class="pt-3 border-t border-slate-100 text-center">
+                    <p class="text-xs text-slate-500">
+                        Already have an account? 
+                        <button onclick="showAuthView('login')" class="text-indigo-600 font-semibold hover:underline">Sign In</button>
+                    </p>
+                </div>
+            </div>
+
+            <!-- FORGOT PASSWORD VIEW -->
+            <div id="auth-forgot-view" class="p-6 sm:p-8 space-y-5 hidden">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-slate-900">Reset Password</h2>
+                    <p class="text-xs text-slate-500 mt-1">Enter your registered email to receive a password recovery prompt</p>
+                </div>
+
+                <form onsubmit="handleForgotPassword(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email Address</label>
+                        <div class="relative">
+                            <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                            <input type="email" id="forgot-email" required placeholder="admin@edutrack.pro" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-600/25 transition-all">
+                        Send Recovery Request
+                    </button>
+                </form>
+
+                <div class="pt-4 border-t border-slate-100 text-center">
+                    <button onclick="showAuthView('login')" class="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Sign In
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="app" class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between hidden md:flex border-r border-slate-800 shrink-0">
+            <div>
+                <!-- Brand Header -->
+                <div class="h-16 flex items-center px-6 gap-3 border-b border-slate-800">
+                    <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-md shadow-indigo-600/30">
+                        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-white text-base leading-tight">EduTrack Pro</h1>
+                        <p class="text-[10px] uppercase font-semibold tracking-wider text-indigo-400">Attendance Hub</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="p-4 space-y-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        Dashboard
+                    </button>
+                    <button onclick="switchTab('classes')" id="nav-classes" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                        Classes
+                    </button>
+                    <button onclick="switchTab('students')" id="nav-students" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        Students
+                    </button>
+                    <button onclick="switchTab('attendance')" id="nav-attendance" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+                        Take Attendance
+                    </button>
+                    <button onclick="switchTab('reports')" id="nav-reports" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                        Reports & Analytics
+                    </button>
+                </nav>
+            </div>
+
+            <!-- User Footer Profile & Logout -->
+            <div class="p-4 border-t border-slate-800 space-y-2">
+                <div class="flex items-center justify-between bg-slate-800/60 p-3 rounded-xl border border-slate-700/50">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div id="user-avatar" class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shrink-0 uppercase">
+                            AD
+                        </div>
+                        <div class="overflow-hidden min-w-0">
+                            <p id="user-display-name" class="text-xs font-semibold text-white truncate">Administrator</p>
+                            <span id="user-display-role" class="inline-block text-[10px] font-bold text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800">Admin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 rounded-xl transition-colors border border-rose-900/30">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            
+            <!-- Top Header -->
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
+                <div class="flex items-center gap-4">
+                    <!-- Mobile Menu Toggle Button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <h2 id="page-title" class="text-xl font-bold text-slate-800">Dashboard Overview</h2>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden sm:block">
+                        <p id="current-date-display" class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full inline-block border border-indigo-100"></p>
+                    </div>
+                    
+                    <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+
+                    <button onclick="resetData()" title="Reset Sample Data" class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-slate-200">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+
+                    <button onclick="handleLogout()" title="Logout" class="md:hidden p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-rose-200">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Mobile Drawer Overlay -->
+            <div id="mobile-menu" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden md:hidden">
+                <div class="w-64 bg-slate-900 text-slate-300 h-full flex flex-col justify-between">
+                    <div>
+                        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-indigo-600 p-2 rounded-xl text-white">
+                                    <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                                </div>
+                                <h1 class="font-bold text-white text-base">EduTrack Pro</h1>
+                            </div>
+                            <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-white">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                        <nav class="p-4 space-y-1">
+                            <button onclick="switchTab('dashboard'); toggleMobileMenu();" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800">
+                                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+                            </button>
+                            <button onclick="switchTab('classes'); toggleMobileMenu();" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800">
+                                <i data-lucide="book-open" class="w-5 h-5"></i> Classes
+                            </button>
+                            <button onclick="switchTab('students'); toggleMobileMenu();" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800">
+                                <i data-lucide="users" class="w-5 h-5"></i> Students
+                            </button>
+                            <button onclick="switchTab('attendance'); toggleMobileMenu();" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800">
+                                <i data-lucide="clipboard-check" class="w-5 h-5"></i> Take Attendance
+                            </button>
+                            <button onclick="switchTab('reports'); toggleMobileMenu();" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800">
+                                <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Reports & Analytics
+                            </button>
+                        </nav>
+                    </div>
+
+                    <div class="p-4 border-t border-slate-800">
+                        <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold text-rose-400 bg-rose-950/40 rounded-xl">
+                            <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrollable Viewport -->
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-100/50">
+                
+                <!-- Toast Notification Container -->
+                <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+                <!-- Role Notice Banner (For Student View Mode) -->
+                <div id="role-notice-banner" class="mb-6 bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl flex items-center justify-between text-xs font-semibold hidden">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600"></i>
+                        <span>Logged in as <strong>Student View</strong>. Administrative modifications (Adding/Deleting Data) are restricted.</span>
+                    </div>
+                </div>
+
+                <!-- 1. DASHBOARD VIEW -->
+                <div id="view-dashboard" class="space-y-6 max-w-7xl mx-auto">
+                    <!-- Stat Cards Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Total Students</p>
+                                <h3 id="stat-total-students" class="text-3xl font-extrabold text-slate-900">0</h3>
+                                <p class="text-xs text-emerald-600 mt-2 flex items-center gap-1 font-medium"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Active enrolled</p>
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-2xl text-indigo-600">
+                                <i data-lucide="users" class="w-7 h-7"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Total Classes</p>
+                                <h3 id="stat-total-classes" class="text-3xl font-extrabold text-slate-900">0</h3>
+                                <p class="text-xs text-indigo-600 mt-2 flex items-center gap-1 font-medium"><i data-lucide="book-open" class="w-3.5 h-3.5"></i> Active batches</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-2xl text-blue-600">
+                                <i data-lucide="book-open" class="w-7 h-7"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Overall Attendance</p>
+                                <h3 id="stat-overall-pct" class="text-3xl font-extrabold text-slate-900">0%</h3>
+                                <p class="text-xs text-slate-500 mt-2">Across recorded dates</p>
+                            </div>
+                            <div class="bg-emerald-50 p-4 rounded-2xl text-emerald-600">
+                                <i data-lucide="pie-chart" class="w-7 h-7"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Today's Present</p>
+                                <h3 id="stat-today-present" class="text-3xl font-extrabold text-slate-900">0</h3>
+                                <p id="stat-today-sub" class="text-xs text-slate-500 mt-2">Marked for today</p>
+                            </div>
+                            <div class="bg-amber-50 p-4 rounded-2xl text-amber-600">
+                                <i data-lucide="check-circle-2" class="w-7 h-7"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions & Recent Summary -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-bold text-slate-800">Class Attendance Overview</h3>
+                                <button onclick="switchTab('attendance')" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">Take Attendance <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+                            </div>
+                            <div id="dashboard-classes-summary" class="space-y-4">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800 mb-4">Quick Shortcuts</h3>
+                                <div class="space-y-3">
+                                    <button onclick="switchTab('classes')" class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl font-medium text-sm text-slate-700 transition-colors border border-slate-200/60">
+                                        <span class="flex items-center gap-3"><i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i> Classes Directory</span>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                                    </button>
+                                    <button onclick="switchTab('students')" class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl font-medium text-sm text-slate-700 transition-colors border border-slate-200/60">
+                                        <span class="flex items-center gap-3"><i data-lucide="user-plus" class="w-5 h-5 text-indigo-600"></i> Student Directory</span>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                                    </button>
+                                    <button onclick="switchTab('attendance')" class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl font-medium text-sm text-slate-700 transition-colors border border-slate-200/60">
+                                        <span class="flex items-center gap-3"><i data-lucide="clipboard-check" class="w-5 h-5 text-indigo-600"></i> Attendance Sheet</span>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                                    </button>
+                                    <button onclick="switchTab('reports')" class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl font-medium text-sm text-slate-700 transition-colors border border-slate-200/60">
+                                        <span class="flex items-center gap-3"><i data-lucide="download" class="w-5 h-5 text-indigo-600"></i> Analytics & CSV Reports</span>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+                                <p class="text-xs text-slate-400">EduTrack Pro v3.0 • Auth LocalStorage Persistence</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. CLASSES VIEW -->
+                <div id="view-classes" class="space-y-6 max-w-7xl mx-auto hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Class Management</h3>
+                            <p class="text-sm text-slate-500">Create and manage classes (e.g. Class 10-A, BTech CSE)</p>
+                        </div>
+                        <button onclick="openClassModal()" id="btn-add-class" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm shadow-lg shadow-indigo-600/20 transition-all">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add New Class
+                        </button>
+                    </div>
+
+                    <!-- Classes Grid -->
+                    <div id="classes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- 3. STUDENTS VIEW -->
+                <div id="view-students" class="space-y-6 max-w-7xl mx-auto hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Student Directory</h3>
+                            <p class="text-sm text-slate-500">Add, view, and organize students across classes</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <select id="student-filter-class" onchange="renderStudentsTable()" class="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="all">All Classes</option>
+                            </select>
+                            <button onclick="openStudentModal()" id="btn-add-student" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm shadow-lg shadow-indigo-600/20 transition-all">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i> Add Student
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Students Table Card -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-slate-200 flex items-center justify-between gap-4">
+                            <div class="relative flex-1 max-w-md">
+                                <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
+                                <input type="text" id="student-search-input" oninput="renderStudentsTable()" placeholder="Search by student name or roll no..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <span id="student-count-badge" class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">0 Students</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-200">
+                                        <th class="py-3.5 px-6 font-semibold">Roll No</th>
+                                        <th class="py-3.5 px-6 font-semibold">Student Name</th>
+                                        <th class="py-3.5 px-6 font-semibold">Class</th>
+                                        <th class="py-3.5 px-6 font-semibold">Contact / Email</th>
+                                        <th class="py-3.5 px-6 font-semibold text-right admin-only-col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. TAKE ATTENDANCE VIEW -->
+                <div id="view-attendance" class="space-y-6 max-w-7xl mx-auto hidden">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 border-b border-slate-100">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">Mark Class Attendance</h3>
+                                <p class="text-sm text-slate-500">Select class and date to take or update attendance records</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <div class="flex flex-col">
+                                    <label class="text-xs font-semibold text-slate-500 mb-1">Select Class</label>
+                                    <select id="attendance-class-select" onchange="loadAttendanceSheet()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[200px]">
+                                        <option value="">-- Choose Class --</option>
+                                    </select>
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs font-semibold text-slate-500 mb-1">Select Date</label>
+                                    <input type="date" id="attendance-date-input" onchange="loadAttendanceSheet()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                                <div class="flex items-end self-end">
+                                    <button onclick="markAllStatus('Present')" id="btn-mark-all" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold rounded-xl transition-colors">Mark All Present</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Attendance Sheet Body -->
+                        <div id="attendance-sheet-container" class="pt-6">
+                            <div class="text-center py-12 text-slate-400">
+                                <i data-lucide="clipboard-list" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+                                <p class="font-medium">Please select a class and date above to load student attendance.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. REPORTS VIEW -->
+                <div id="view-reports" class="space-y-6 max-w-7xl mx-auto hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Attendance Reports & Analytics</h3>
+                            <p class="text-sm text-slate-500">Filter logs by class and date range, view summaries and export records</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="exportCSVReport()" class="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium px-4 py-2.5 rounded-xl text-sm transition-all shadow-sm">
+                                <i data-lucide="download" class="w-4 h-4 text-indigo-600"></i> Export CSV
+                            </button>
+                            <button onclick="printReport()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm shadow-lg shadow-indigo-600/20 transition-all">
+                                <i data-lucide="printer" class="w-4 h-4"></i> Print Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Bar -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap items-center gap-4">
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-500 mb-1">Filter Class</label>
+                            <select id="report-class-select" onchange="renderReportsTable()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2 min-w-[180px]">
+                                <option value="all">All Classes</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-500 mb-1">From Date</label>
+                            <input type="date" id="report-from-date" onchange="renderReportsTable()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-500 mb-1">To Date</label>
+                            <input type="date" id="report-to-date" onchange="renderReportsTable()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2">
+                        </div>
+                    </div>
+
+                    <!-- Report Table -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                            <h4 class="font-bold text-slate-800 text-sm">Aggregated Student Summaries</h4>
+                            <span id="report-records-count" class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">0 Records</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-200">
+                                        <th class="py-3.5 px-6 font-semibold">Roll No</th>
+                                        <th class="py-3.5 px-6 font-semibold">Student Name</th>
+                                        <th class="py-3.5 px-6 font-semibold">Class</th>
+                                        <th class="py-3.5 px-6 font-semibold">Total Days</th>
+                                        <th class="py-3.5 px-6 font-semibold">Present</th>
+                                        <th class="py-3.5 px-6 font-semibold">Absent</th>
+                                        <th class="py-3.5 px-6 font-semibold">Late</th>
+                                        <th class="py-3.5 px-6 font-semibold">Attendance %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div id="class-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h3 class="text-lg font-bold text-slate-900">Add New Class</h3>
+                <button onclick="closeClassModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleClassSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Class Name / Title</label>
+                    <input type="text" id="modal-class-name" required placeholder="e.g. Class 10-A, BTech CSE Year 3" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Section / Code</label>
+                    <input type="text" id="modal-class-code" required placeholder="e.g. 10A, CSE3" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Description / Room</label>
+                    <input type="text" id="modal-class-desc" placeholder="e.g. Morning Batch, Room 302" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeClassModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl shadow-lg shadow-indigo-600/20 transition-all">Create Class</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="student-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h3 class="text-lg font-bold text-slate-900">Enroll New Student</h3>
+                <button onclick="closeStudentModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleStudentSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Assign to Class</label>
+                    <select id="modal-student-class" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">-- Select Class --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Student Full Name</label>
+                    <input type="text" id="modal-student-name" required placeholder="e.g. John Doe" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Roll Number / ID</label>
+                    <input type="text" id="modal-student-roll" required placeholder="e.g. STU101" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email / Contact</label>
+                    <input type="text" id="modal-student-contact" placeholder="e.g. john@example.com" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeStudentModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl shadow-lg shadow-indigo-600/20 transition-all">Enroll Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script src="script.js" defer></script>
+</body>
+</html>
